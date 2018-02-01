@@ -28,3 +28,10 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+import_config "evixir.exs"
+
+config :money,
+  default_currency: :ISK,  # this allows you to do Money.new(100)
+  separator: " ",          # change the default thousands separator for Money.to_string
+  delimiter: ".",          # change the default decimal delimeter for Money.to_string
+  symbol: false            # don’t display the currency symbol in Money.to_string
