@@ -22,19 +22,12 @@ defmodule Evixir.ESI.Market do
 
     def get_item_price(item_id) do
         id = hd(item_id)["id"]
-        name = hd(item_id)["name"]
-        url = "https://esi.tech.ccp.is/latest/markets/10000002/orders/?order_type=sell&type_id=" <> to_string(id)
-        response = HTTPotion.get(url, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"])
-        data = Poison.decode!(response.body)
-        
-        lowest_sell_price = hd(Enum.sort(data, &(&1["price"] <= &2["price"])))
+        lowest_sell_price = get_lowest_item_price(id)
         graphic_url = "https://imageserver.eveonline.com/Type/" <> to_string(id) <> "_64.png"
         item_data = get_item_data(id)
 
         embeds = %Nostrum.Struct.Embed{
-            # author: %Nostrum.Struct.Embed.Author{icon_url: graphic_url, name: "Evixir Bot"}, 
             thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: graphic_url},
-            timestamp: to_string(DateTime.to_iso8601(DateTime.utc_now())),
             fields: [
                 %Nostrum.Struct.Embed.Field{inline: true, name: "Type", value: item_data.group["name"]},
                 %Nostrum.Struct.Embed.Field{inline: true, name: "Name", value: item_data.info["name"]},
@@ -43,6 +36,14 @@ defmodule Evixir.ESI.Market do
             ]
         }
         [content: "", embed: embeds]
+    end
+
+    def get_lowest_item_price(item_id) do
+        url = "https://esi.tech.ccp.is/latest/markets/10000002/orders/?order_type=sell&type_id=" <> to_string(item_id) 
+        HTTPotion.get(url, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"]).body 
+        |> Poison.decode!
+        |> Enum.sort(&(&1["price"] <= &2["price"]))
+        |> hd
     end
 
     def get_item_data(item_id) do

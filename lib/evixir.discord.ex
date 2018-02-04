@@ -11,6 +11,8 @@ defmodule Evixir.Discord do
       unless byte_size(msg.content) == 0 do
         command = String.split(msg.content)
         case hd(command) do
+          <<"!" :: binary, "help" :: binary>> ->
+            Api.create_message(msg.channel_id, "Available commands:\n!auth - authorize this channel to post recent killmails (only server owner)\n!pc <item name> - check item price in Jita\n!ping - pong")
           <<"!" :: binary, "auth" :: binary>> ->
             Api.create_message(msg.channel_id, "Visit https://evixir.metacode.pl/?channel=" <> to_string(msg.channel_id) <> " to authenticate with this channel.")
           <<"!" :: binary, "ping" :: binary>> ->
