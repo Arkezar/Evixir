@@ -32,7 +32,7 @@ defmodule Evixir.ESI.Market do
                 %Nostrum.Struct.Embed.Field{inline: true, name: "Type", value: item_data.group["name"]},
                 %Nostrum.Struct.Embed.Field{inline: true, name: "Name", value: item_data.info["name"]},
                 %Nostrum.Struct.Embed.Field{inline: true, name: "Region", value: "The Forge"},
-                %Nostrum.Struct.Embed.Field{inline: true, name: "Price", value: Money.to_string(Money.parse!(lowest_sell_price["price"], :ISK)) <> " ISK"}
+                %Nostrum.Struct.Embed.Field{inline: true, name: "Price", value: Money.to_string(Money.parse!(lowest_sell_price["price"] / 1, :ISK)) <> " ISK"}
             ]
         }
         [content: "", embed: embeds]

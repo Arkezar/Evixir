@@ -9,7 +9,7 @@ defmodule Evixir.ESI.Killmail do
     def poll() do
       receive do
       after
-        60_000 ->
+        300_000 ->
           get_kms()
           poll()
       end
@@ -59,13 +59,13 @@ defmodule Evixir.ESI.Killmail do
       embeds = %Nostrum.Struct.Embed{
         thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: "https://imageserver.eveonline.com/Type/" <> to_string(ship_id) <> "_64.png"},
         fields: [
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Victim", value: victim_data["name"]},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: victim_corp_name},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Type", value: item_data.group["name"]},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Ship", value: item_data.info["name"]},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Killer", value: killer_data["name"]},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: killer_corp_name},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Value", value: Money.to_string(Money.parse!(value, :ISK)) <> " ISK"}
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Victim", value: victim_data["name"] || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: victim_corp_name || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Type", value: item_data.group["name"] || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Ship", value: item_data.info["name"] || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Killer", value: killer_data["name"] || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: killer_corp_name || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Value", value: Money.to_string(Money.parse!(value / 1, :ISK)) <> " ISK"}
         ]
       }
       %{msg: [content: "", embed: embeds], killmail_id: killmail["killmail_id"]}
