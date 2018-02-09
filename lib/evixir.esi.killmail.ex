@@ -57,6 +57,8 @@ defmodule Evixir.ESI.Killmail do
 
       value = get_kill_value([ %{ "quantity_destroyed" => 1, "item_type_id" => ship_id} | km_data["victim"]["items"]])
       embeds = %Nostrum.Struct.Embed{
+        title: "Killmail #" <> to_string(killmail["killmail_id"]),
+        url: "https://zkillboard.com/kill/" <> to_string(killmail["killmail_id"]) <> "/",
         color: if(km_data["victim"]["corporation_id"] == corp_id) do Integer.parse("ff0000", 16) else Integer.parse("00ff00", 16) end,
         thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: "https://imageserver.eveonline.com/Type/" <> to_string(ship_id) <> "_64.png"},
         timestamp: km_data["killmail_time"],
@@ -78,10 +80,16 @@ defmodule Evixir.ESI.Killmail do
     end
 
     def get_recent_killmails(corp_id, token) do
-      unless DateTime.diff(DateTime.from_unix!(token.expires_at - 5), DateTime.utc_now) > 0 do
-        token = Evixir.ESI.Authentication.refresh(token.channel_id)
-      end
+      token = get_token_for_request(token)
       url = "https://esi.tech.ccp.is/latest/corporations/" <> to_string(corp_id) <> "/killmails/recent/"
       HTTPotion.get(url, headers: ["Authorization": "Bearer " <> token.access_token, "X-User-Agent": "Evixir"]).body |> Poison.decode!
+    end
+
+    def get_token_for_request(token) do
+      unless DateTime.diff(DateTime.from_unix!(token.expires_at - 5), DateTime.utc_now) > 0 do
+        Evixir.ESI.Authentication.refresh(token.channel_id)
+      else
+        token
+      end
     end
   end
