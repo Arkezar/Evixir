@@ -55,7 +55,7 @@ defmodule Evixir.ESI.Killmail do
       killer_corp_name = Evixir.ESI.Corporation.get_corporation_info(killer["corporation_id"])["name"]
       item_data = Evixir.ESI.Market.get_item_data(ship_id)
 
-      value = get_kill_value(km_data["victim"]["items"])
+      value = get_kill_value([ %{ "quantity_destroyed" => 1, "item_type_id" => ship_id} | km_data["victim"]["items"]])
       embeds = %Nostrum.Struct.Embed{
         thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: "https://imageserver.eveonline.com/Type/" <> to_string(ship_id) <> "_64.png"},
         fields: [
@@ -72,7 +72,7 @@ defmodule Evixir.ESI.Killmail do
     end
 
     def get_kill_value(items) do
-      List.foldl(items, 0, fn(x, acc) -> acc + Evixir.ESI.Market.get_lowest_item_price(x["item_type_id"])["price"] end)
+      List.foldl(items, 0, fn(x, acc) -> acc + (((x["quantity_destroyed"] || 0) + (x["quantity_dropped"] || 0)) * Evixir.ESI.Market.get_lowest_item_price(x["item_type_id"])["price"]) end)
     end
 
     def get_recent_killmails(corp_id, token) do
