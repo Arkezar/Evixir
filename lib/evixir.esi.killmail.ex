@@ -59,7 +59,7 @@ defmodule Evixir.ESI.Killmail do
       embeds = %Nostrum.Struct.Embed{
         title: "Killmail #" <> to_string(killmail["killmail_id"]),
         url: "https://zkillboard.com/kill/" <> to_string(killmail["killmail_id"]) <> "/",
-        color: if(km_data["victim"]["corporation_id"] == corp_id) do Integer.parse("ff0000", 16) else Integer.parse("00ff00", 16) end,
+        color: if(km_data["victim"]["corporation_id"] == corp_id) do String.to_integer("ff0000", 16) else String.to_integer("00ff00", 16) end,
         thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: "https://imageserver.eveonline.com/Type/" <> to_string(ship_id) <> "_64.png"},
         timestamp: km_data["killmail_time"],
         fields: [
