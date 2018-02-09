@@ -28,7 +28,7 @@ defmodule Evixir.ESI.Killmail do
 
     def sync_channel(channel) do
       recent_kms = Enum.reverse(Enum.take_while(get_recent_killmails(channel.corporation_id, channel.token), fn(x) -> x["killmail_id"] > channel.last_killmail end))
-      Enum.each recent_kms, (&gen_killmail(&1) |> post_killmail(channel.channel_id))
+      Enum.each recent_kms, (&gen_killmail(&1, channel.corporation_id) |> post_killmail(channel.channel_id))
     end
 
     def post_killmail(data, channel_id) do
@@ -43,7 +43,7 @@ defmodule Evixir.ESI.Killmail do
       Evixir.Repo.update!(change)
     end
 
-    def gen_killmail(killmail) do
+    def gen_killmail(killmail, corp_id) do
       url = "https://esi.tech.ccp.is/latest/killmails/" <> to_string(killmail["killmail_id"]) <> "/" <> to_string(killmail["killmail_hash"]) <> "/"
       km_data = HTTPotion.get(url, headers: ["X-User-Agent": "Evixir"]).body |> Poison.decode!
 
@@ -57,7 +57,9 @@ defmodule Evixir.ESI.Killmail do
 
       value = get_kill_value([ %{ "quantity_destroyed" => 1, "item_type_id" => ship_id} | km_data["victim"]["items"]])
       embeds = %Nostrum.Struct.Embed{
+        color: if(km_data["victim"]["corporation_id"] == corp_id) do Integer.parse("ff0000", 16) else Integer.parse("00ff00", 16) end,
         thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: "https://imageserver.eveonline.com/Type/" <> to_string(ship_id) <> "_64.png"},
+        timestamp: km_data["killmail_time"],
         fields: [
           %Nostrum.Struct.Embed.Field{inline: true, name: "Victim", value: victim_data["name"] || "N/A"},
           %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: victim_corp_name || "N/A"},
