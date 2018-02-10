@@ -76,7 +76,7 @@ defmodule Evixir.ESI.Killmail do
     end
 
     def get_kill_value(items) do
-      List.foldl(items, 0, fn(x, acc) -> acc + (((x["quantity_destroyed"] || 0) + (x["quantity_dropped"] || 0)) * Evixir.ESI.Market.get_lowest_item_price(x["item_type_id"])["price"]) end)
+      List.foldl(items, 0, fn(x, acc) -> acc + (((x["quantity_destroyed"] || 0) + (x["quantity_dropped"] || 0)) * (Evixir.ESI.Market.get_lowest_item_price(x["item_type_id"])["price"] || 0)) end)
     end
 
     def get_recent_killmails(corp_id, token) do

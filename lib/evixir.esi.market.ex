@@ -40,10 +40,11 @@ defmodule Evixir.ESI.Market do
 
     def get_lowest_item_price(item_id) do
         url = "https://esi.tech.ccp.is/latest/markets/10000002/orders/?order_type=sell&type_id=" <> to_string(item_id) 
-        HTTPotion.get(url, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"]).body 
+        url |> IO.puts
+        data = HTTPotion.get(url, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"]).body 
         |> Poison.decode!
         |> Enum.sort(&(&1["price"] <= &2["price"]))
-        |> hd
+        |> List.first
     end
 
     def get_item_data(item_id) do
