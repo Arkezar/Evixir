@@ -53,6 +53,7 @@ defmodule Evixir.ESI.Killmail do
       killer = Enum.find(km_data["attackers"], &(&1["final_blow"]))
       killer_data = Evixir.ESI.Character.get_character_info(killer["character_id"])
       killer_corp_name = Evixir.ESI.Corporation.get_corporation_info(killer["corporation_id"])["name"]
+      solar_system_name = get_solar_system_name(km_data["solar_system_id"])
       item_data = Evixir.ESI.Market.get_item_data(ship_id)
 
       value = get_kill_value([ %{ "quantity_destroyed" => 1, "item_type_id" => ship_id} | km_data["victim"]["items"]])
@@ -69,6 +70,7 @@ defmodule Evixir.ESI.Killmail do
           %Nostrum.Struct.Embed.Field{inline: true, name: "Ship", value: item_data.info["name"] || "N/A"},
           %Nostrum.Struct.Embed.Field{inline: true, name: "Killer", value: killer_data["name"] || "N/A"},
           %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: killer_corp_name || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "System", value: solar_system_name || "N/A"},
           %Nostrum.Struct.Embed.Field{inline: true, name: "Value", value: Money.to_string(Money.parse!(value / 1, :ISK)) <> " ISK"}
         ]
       }
@@ -83,6 +85,12 @@ defmodule Evixir.ESI.Killmail do
       token = get_token_for_request(token)
       url = "https://esi.tech.ccp.is/latest/corporations/" <> to_string(corp_id) <> "/killmails/recent/"
       HTTPotion.get(url, headers: ["Authorization": "Bearer " <> token.access_token, "X-User-Agent": "Evixir"]).body |> Poison.decode!
+    end
+
+    def get_solar_system_name(system_id) do
+      url = "https://esi.tech.ccp.is/latest/universe/systems/" <> to_string(system_id) <> "/"
+      data = HTTPotion.get(url, headers: ["X-User-Agent": "Evixir"]).body |> Poison.decode!
+      data["name"]
     end
 
     def get_token_for_request(token) do
