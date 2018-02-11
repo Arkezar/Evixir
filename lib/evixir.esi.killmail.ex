@@ -56,6 +56,8 @@ defmodule Evixir.ESI.Killmail do
       solar_system_name = get_solar_system_name(km_data["solar_system_id"])
       item_data = Evixir.ESI.Market.get_item_data(ship_id)
 
+      victim_text = if victim_data["name"] != nil do "[" <> victim_data["name"] <> "](https://zkillboard.com/character/" <> to_string(km_data["victim"]["character_id"]) <> "/)" else "N/A" end
+
       value = get_kill_value([ %{ "quantity_destroyed" => 1, "item_type_id" => ship_id} | km_data["victim"]["items"]])
       embeds = %Nostrum.Struct.Embed{
         title: "Killmail #" <> to_string(killmail["killmail_id"]),
@@ -64,12 +66,8 @@ defmodule Evixir.ESI.Killmail do
         thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: "https://imageserver.eveonline.com/Type/" <> to_string(ship_id) <> "_64.png"},
         timestamp: km_data["killmail_time"],
         fields: [
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Victim", value: victim_data["name"] || "N/A"},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: victim_corp_name || "N/A"},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Type", value: item_data.group["name"] || "N/A"},
+          %Nostrum.Struct.Embed.Field{inline: true, name: "Victim", value: victim_text},
           %Nostrum.Struct.Embed.Field{inline: true, name: "Ship", value: item_data.info["name"] || "N/A"},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Killer", value: killer_data["name"] || "N/A"},
-          %Nostrum.Struct.Embed.Field{inline: true, name: "Corporation", value: killer_corp_name || "N/A"},
           %Nostrum.Struct.Embed.Field{inline: true, name: "System", value: solar_system_name || "N/A"},
           %Nostrum.Struct.Embed.Field{inline: true, name: "Value", value: Money.to_string(Money.parse!(value / 1, :ISK)) <> " ISK"}
         ]
