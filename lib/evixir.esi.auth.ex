@@ -44,6 +44,7 @@ defmodule Evixir.ESI.Authentication do
 
     def handle_auth_token(existing_token, new_token, channelid) do
         handle_refresh({:ok, new_token}, existing_token)
+        "Tokens refreshed"
     end
 
     def create_channel_object(channel_id, corp_id, token) do
