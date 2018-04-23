@@ -5,7 +5,7 @@ defmodule Evixir.ESI.Killmail do
     def start_link(_arg) do
       Task.start_link(&poll/0)
     end
-    
+
     def poll() do
       receive do
       after
@@ -14,7 +14,7 @@ defmodule Evixir.ESI.Killmail do
           poll()
       end
     end
-    
+
     def get_kms() do
       channels = Evixir.Repo.all(Evixir.ESI.Channel) |> Evixir.Repo.preload(:token)
       Enum.each channels, &sync_channel_async(&1)
@@ -49,15 +49,9 @@ defmodule Evixir.ESI.Killmail do
 
       ship_id = km_data["victim"]["ship_type_id"]
       victim_data = Evixir.ESI.Character.get_character_info(km_data["victim"]["character_id"])
-      victim_corp_name = Evixir.ESI.Corporation.get_corporation_info(km_data["victim"]["corporation_id"])["name"]
-      killer = Enum.find(km_data["attackers"], &(&1["final_blow"]))
-      killer_data = Evixir.ESI.Character.get_character_info(killer["character_id"])
-      killer_corp_name = Evixir.ESI.Corporation.get_corporation_info(killer["corporation_id"])["name"]
       solar_system_name = get_solar_system_name(km_data["solar_system_id"])
       item_data = Evixir.ESI.Market.get_item_data(ship_id)
-
       victim_text = if victim_data["name"] != nil do "[" <> victim_data["name"] <> "](https://zkillboard.com/character/" <> to_string(km_data["victim"]["character_id"]) <> "/)" else "N/A" end
-
       value = get_kill_value([ %{ "quantity_destroyed" => 1, "item_type_id" => ship_id} | km_data["victim"]["items"]])
       embeds = %Nostrum.Struct.Embed{
         title: "Killmail #" <> to_string(killmail["killmail_id"]),

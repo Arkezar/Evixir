@@ -24,30 +24,38 @@ defmodule Evixir.ESI.Authentication do
     end
 
     def handle_callback({:ok, data}, state) do
-        char_data = HTTPotion.get("https://login.eveonline.com/oauth/verify", headers: ["Authorization": "Bearer " <> data.token.access_token, "User-Agent": "Evixir"]).body |> Poison.decode!
+        Evixir.ESI.Token |> Ecto.Query.where(channel_id: ^state) |> Evixir.Repo.one |> handle_auth_token(data, state)
+    end
+
+    def handle_auth_token(nil, new_token, channelid) do
+        char_data = HTTPotion.get("https://login.eveonline.com/oauth/verify", headers: ["Authorization": "Bearer " <> new_token.token.access_token, "User-Agent": "Evixir"]).body |> Poison.decode!
         corp_id = get_corp_id(char_data["CharacterID"])
 
         new_auth_token = %Evixir.ESI.Token{
-            channel_id: state,
-            access_token: data.token.access_token,
-            expires_at: data.token.expires_at,
-            refresh_token: data.token.refresh_token,
-            token_type: data.token.token_type,
-            channel: create_channel_object(state, corp_id, data.token)
+            channel_id: channelid,
+            access_token: new_token.token.access_token,
+            expires_at: new_token.token.expires_at,
+            refresh_token: new_token.token.refresh_token,
+            token_type: new_token.token.token_type,
+            channel: create_channel_object(channelid, corp_id, new_token.token)
         }
         Evixir.Repo.insert(new_auth_token) |> handle_new_token
     end
 
+    def handle_auth_token(existing_token, new_token, channelid) do
+        handle_refresh({:ok, new_token}, existing_token)
+    end
+
     def create_channel_object(channel_id, corp_id, token) do
         recent_km = Evixir.ESI.Killmail.get_recent_killmails(corp_id, token)
-        new_channel = %Evixir.ESI.Channel{
+        %Evixir.ESI.Channel{
             channel_id: channel_id,
             corporation_id: corp_id,
             last_killmail: hd(recent_km)["killmail_id"]
         }
     end
 
-    def handle_new_token({:ok, token}) do          
+    def handle_new_token({:ok, token}) do
         "Your are authenticated. You may close this page now."
     end
 
