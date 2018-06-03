@@ -2,7 +2,7 @@ defmodule Evixir.ESI.Market do
     require HTTPotion
 
     def get_item_id(item_name) do
-        content = "[\"" <> item_name <> "\"]"  
+        content = "[\"" <> item_name <> "\"]"
         HTTPotion.post("https://esi.tech.ccp.is/latest/universe/ids/", body: content, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"]) |> handle_get_item_id
     end
 
@@ -27,6 +27,8 @@ defmodule Evixir.ESI.Market do
         item_data = get_item_data(id)
 
         embeds = %Nostrum.Struct.Embed{
+            title: "Eveprisal #" <> to_string(id),
+            url: "https://evepraisal.com/item/" <> to_string(id),
             thumbnail: %Nostrum.Struct.Embed.Thumbnail{url: graphic_url},
             fields: [
                 %Nostrum.Struct.Embed.Field{inline: true, name: "Type", value: item_data.group["name"]},
@@ -40,7 +42,7 @@ defmodule Evixir.ESI.Market do
 
     def get_lowest_item_price(item_id) do
         url = "https://esi.tech.ccp.is/latest/markets/10000002/orders/?order_type=sell&type_id=" <> to_string(item_id)
-        data = HTTPotion.get(url, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"]).body 
+        data = HTTPotion.get(url, headers: ["Content-Type": "application/json", "X-User-Agent": "Evixir"]).body
         |> Poison.decode!
         |> Enum.sort(&(&1["price"] <= &2["price"]))
         |> List.first
